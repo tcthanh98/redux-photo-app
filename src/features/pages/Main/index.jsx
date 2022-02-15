@@ -1,12 +1,25 @@
 import Banner from "components/Banner";
 import Images from "constants/images";
+import PhotoList from "features/Photo/components/PhotoList";
 import React from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Container } from "reactstrap";
 
 MainPage.propTypes = {};
 
 function MainPage(props) {
+  const photos = useSelector((state) => state.photos);
+  console.log("list photo: ", photos);
+
+  const handlePhotoEditClick = (photo) => {
+    console.log("Edit: ", photo);
+  };
+
+  const handlePhotoRemoveClick = (photo) => {
+    console.log("Remove: ", photo);
+  };
+
   return (
     <div className="photo-main">
       <Banner
@@ -16,6 +29,12 @@ function MainPage(props) {
       <Container className="text-center">
         <Link to="/photos/add">Add new photo</Link>
       </Container>
+
+      <PhotoList
+        photoList={photos}
+        onPhotoEditClick={handlePhotoEditClick}
+        onPhotoRemoveClick={handlePhotoRemoveClick}
+      />
     </div>
   );
 }
