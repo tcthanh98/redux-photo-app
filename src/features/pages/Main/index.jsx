@@ -1,23 +1,33 @@
 import Banner from "components/Banner";
 import Images from "constants/images";
 import PhotoList from "features/Photo/components/PhotoList";
+import { removePhoto } from "features/Photo/photoSlice";
 import React from "react";
+import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Container } from "reactstrap";
 
 MainPage.propTypes = {};
 
 function MainPage(props) {
+  const history = useHistory();
   const photos = useSelector((state) => state.photos);
+  const dispatch = useDispatch();
+  
   console.log("list photo: ", photos);
 
   const handlePhotoEditClick = (photo) => {
-    console.log("Edit: ", photo);
+    // console.log("Edit: ", photo);
+    const editPhotoUrl = `/photos/${photo.id}`;
+    history.push(editPhotoUrl);
   };
 
   const handlePhotoRemoveClick = (photo) => {
-    console.log("Remove: ", photo);
+    // console.log("Remove: ", photo);
+    const removePhotoId = photo.id;
+    const action = removePhoto(removePhotoId);
+    dispatch(action);
   };
 
   return (

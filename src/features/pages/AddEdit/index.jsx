@@ -21,7 +21,7 @@ function AddEditPage(props) {
     console.log({ photos: state.photos, photoId, foundPhoto });
     return foundPhoto;
   });
-  console.log({ photoId, editedPhoto })
+  // console.log({ photoId, editedPhoto })
 
   const initialValues = isAddMode
     ? {
