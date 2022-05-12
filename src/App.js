@@ -4,11 +4,10 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import React, { Suspense, useEffect } from "react";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { Spinner } from "reactstrap";
 import "./App.css";
 import Header from "./components/Header";
 import NotFound from "./components/NotFound";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { Spinner } from "reactstrap";
 
 const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API,
@@ -23,7 +22,6 @@ firebase.initializeApp(config);
 const Photo = React.lazy(() => import("./features/Photo"));
 
 function App() {
-  const queryClient = new QueryClient();
   // Handle firebase auth changed
   useEffect(() => {
     const unregisterAuthObserver = firebase
@@ -52,7 +50,6 @@ function App() {
 
   return (
     <div className="photo-app">
-      <QueryClientProvider client={queryClient}>
         <Suspense fallback={<Spinner className="photo-app-spinner" />}>
           <BrowserRouter>
             <Header />
@@ -65,7 +62,6 @@ function App() {
             </Switch>
           </BrowserRouter>
         </Suspense>
-      </QueryClientProvider>
     </div>
   );
 }
