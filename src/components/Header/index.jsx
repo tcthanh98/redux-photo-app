@@ -1,13 +1,37 @@
-import React from "react";
+import firebase from "firebase/app";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Col, Container, Row } from "reactstrap";
-import './Header.scss';
-
-
+import {
+  Col,
+  Container,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  Row,
+} from "reactstrap";
+import { getFirebaseUserName } from "utils/common";
+import "./Header.scss";
 
 Header.propTypes = {};
 
 function Header(props) {
+  const [userName, setUserName] = useState(getFirebaseUserName());
+  const [showDropDown, setShowDropDown] = useState(false);
+
+  const handleLogOut = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        localStorage.removeItem("firebaseRememberedAccount");
+        setUserName(null);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   return (
     <header className="header">
       <Container>
@@ -24,14 +48,30 @@ function Header(props) {
           </Col>
 
           <Col xs="auto">
-            <NavLink
-              exact
-              className="header__link"
-              to="/photos"
-              activeClassName="header__link--active"
-            >
-              Photo App
-            </NavLink>
+            {userName ? (
+              <Dropdown
+                toggle={() => setShowDropDown(!showDropDown)}
+                isOpen={showDropDown}
+              >
+                <DropdownToggle className="header__dropdown">
+                  Hi! {userName}
+                </DropdownToggle>
+                <DropdownMenu>
+                  <DropdownItem onClick={() => handleLogOut()}>
+                    Log Out
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            ) : (
+              <NavLink
+                exact
+                className="header__link"
+                to="/sign-in"
+                activeClassName="header__link--active"
+              >
+                Sign In
+              </NavLink>
+            )}
           </Col>
         </Row>
       </Container>

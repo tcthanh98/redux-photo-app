@@ -80,11 +80,9 @@ const photo = createSlice({
   initialState: initialPhotos,
   reducers: {
     addPhoto: (state, action) => {
-      // const newPhoto = action.payload;
       state.push(action.payload);
     },
     removePhoto: (state, action) => {
-      // console.log(action.payload);
       const removePhotoId = action.payload;
       return state.filter(photo => photo.id !== removePhotoId);
     },

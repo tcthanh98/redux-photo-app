@@ -1,5 +1,4 @@
 import { PHOTO_CATEGORY_OPTIONS } from "constants/global";
-import Images from "constants/images";
 import InputField from "custom-fields/InputField";
 import RandomPhotoField from "custom-fields/RandomPhotoField";
 import SelectField from "custom-fields/SelectField";
@@ -39,9 +38,7 @@ function PhotoForm(props) {
       onSubmit={props.onSubmit}
     >
       {(formikProps) => {
-        // do something here
-        const { values, errors, touched, isSubmitting } = formikProps;
-        console.log({ values, errors, touched });
+        const { isSubmitting } = formikProps;
         return (
           <Form>
             <FastField
@@ -68,7 +65,7 @@ function PhotoForm(props) {
             <FormGroup>
               <Button type="submit" color={isAddMode ? "primary" : "success"}>
                 {isSubmitting && <Spinner size="sm" />}
-                {isAddMode ? 'Add to album' : 'Update your photo'}
+                {isAddMode ? "Add to album" : "Update your photo"}
               </Button>
             </FormGroup>
           </Form>

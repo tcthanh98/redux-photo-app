@@ -1,5 +1,13 @@
 .App {
   text-align: center;
+
+}
+
+.photo-app-spinner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  color: #ffbcbc;
 }
 
 .App-logo {

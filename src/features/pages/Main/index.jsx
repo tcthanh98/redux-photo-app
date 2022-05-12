@@ -2,11 +2,12 @@ import Banner from "components/Banner";
 import Images from "constants/images";
 import PhotoList from "features/Photo/components/PhotoList";
 import { removePhoto } from "features/Photo/photoSlice";
-import React from "react";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import firebase from "firebase/app";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
 import { Container } from "reactstrap";
+import { getFirebaseUserId, objectToArr } from "utils/common";
 
 MainPage.propTypes = {};
 
@@ -14,17 +15,38 @@ function MainPage(props) {
   const history = useHistory();
   const photos = useSelector((state) => state.photos);
   const dispatch = useDispatch();
-  
-  console.log("list photo: ", photos);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [userPhotos, setUserPhotos] = useState([]);
+  const uID = getFirebaseUserId();
+
+  useEffect(() => {
+    const getUserPhotos = () => {
+      const dbRef = firebase.database().ref(uID);
+      dbRef
+        .get()
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            setUserPhotos(objectToArr(snapshot.val()));
+          } else {
+            console.log("no data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
+
+    getUserPhotos();
+    setIsLoading(false);
+  });
 
   const handlePhotoEditClick = (photo) => {
-    // console.log("Edit: ", photo);
     const editPhotoUrl = `/photos/${photo.id}`;
     history.push(editPhotoUrl);
   };
 
   const handlePhotoRemoveClick = (photo) => {
-    // console.log("Remove: ", photo);
     const removePhotoId = photo.id;
     const action = removePhoto(removePhotoId);
     dispatch(action);
@@ -36,14 +58,19 @@ function MainPage(props) {
         title="🎉 Your awesome photos 🎉"
         backgroundUrl={Images.PINK_BG}
       />
-      <Container className="text-center">
-        <Link to="/photos/add">Add new photo</Link>
-      </Container>
 
+      <Container className="text-center">
+        {uID ? (
+          <Link to="/photos/add">Add new photo</Link>
+        ) : (
+          <p>Log in to create your own album</p>
+        )}
+      </Container>
       <PhotoList
-        photoList={photos}
+        photoList={uID ? userPhotos : photos}
         onPhotoEditClick={handlePhotoEditClick}
         onPhotoRemoveClick={handlePhotoRemoveClick}
+        onLoading={isLoading}
       />
     </div>
   );

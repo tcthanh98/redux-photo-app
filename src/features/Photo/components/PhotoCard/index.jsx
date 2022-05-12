@@ -1,6 +1,8 @@
-import React from "react";
+import firebase from "firebase/app";
 import PropTypes from "prop-types";
+import React from "react";
 import { Button } from "reactstrap";
+import { getFirebaseUserId } from "utils/common";
 import "./PhotoCard.scss";
 
 PhotoCard.propTypes = {
@@ -17,13 +19,17 @@ PhotoCard.defaultProps = {
 
 function PhotoCard(props) {
   const { photo, onEditClick, onRemoveClick } = props;
-
+  // console.log(photo.id);
   const handleEditClick = () => {
     if (onEditClick) onEditClick(photo);
   };
 
   const handleRemoveClick = () => {
-    if (onRemoveClick) onRemoveClick(photo);
+    if (onRemoveClick) {
+      const uID = getFirebaseUserId();
+      onRemoveClick(photo);
+      firebase.database().ref(uID + `/photo_${photo.id}`).remove();
+    }
   };
 
   return (
