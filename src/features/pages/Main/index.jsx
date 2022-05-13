@@ -1,5 +1,6 @@
 import Banner from "components/Banner";
 import Images from "constants/images";
+import Pagination from "constants/pagination";
 import PhotoList from "features/Photo/components/PhotoList";
 import { removePhoto } from "features/Photo/photoSlice";
 import firebase from "firebase/app";
@@ -11,13 +12,16 @@ import { getFirebaseUserId, objectToArr } from "utils/common";
 
 MainPage.propTypes = {};
 
-function MainPage(props) {
+function MainPage() {
   const history = useHistory();
   const photos = useSelector((state) => state.photos);
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(true);
   const [userPhotos, setUserPhotos] = useState([]);
+  const [totalPhotos, setTotalPhotos] = useState(0);
+  const [isError, setIsError] = useState(false);
+
   const uID = getFirebaseUserId();
 
   useEffect(() => {
@@ -28,12 +32,15 @@ function MainPage(props) {
         .then((snapshot) => {
           if (snapshot.exists()) {
             setUserPhotos(objectToArr(snapshot.val()));
+            setTotalPhotos(snapshot.numChildren());
+            setIsError(true);
           } else {
             console.log("no data available");
           }
         })
         .catch((error) => {
           console.error(error);
+          // setIsError(true);
         });
     };
 
@@ -66,12 +73,18 @@ function MainPage(props) {
           <p>Log in to create your own album</p>
         )}
       </Container>
-      <PhotoList
-        photoList={uID ? userPhotos : photos}
-        onPhotoEditClick={handlePhotoEditClick}
-        onPhotoRemoveClick={handlePhotoRemoveClick}
-        onLoading={isLoading}
-      />
+      {isError ? (
+        <p>There something wrong</p>
+      ) : (
+        <PhotoList
+          photoList={uID ? userPhotos : photos}
+          onPhotoEditClick={handlePhotoEditClick}
+          onPhotoRemoveClick={handlePhotoRemoveClick}
+          onLoading={isLoading}
+          limit={Pagination.LIMIT}
+          total={totalPhotos}
+        />
+      )}
     </div>
   );
 }
