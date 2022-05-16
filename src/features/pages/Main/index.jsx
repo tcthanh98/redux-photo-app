@@ -1,14 +1,16 @@
 import Banner from "components/Banner";
+import Error from "components/Error";
 import Images from "constants/images";
 import Pagination from "constants/pagination";
 import PhotoList from "features/Photo/components/PhotoList";
 import { removePhoto } from "features/Photo/photoSlice";
 import firebase from "firebase/app";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory } from "react-router-dom";
 import { Container } from "reactstrap";
 import { getFirebaseUserId, objectToArr } from "utils/common";
+import "./main.scss";
 
 MainPage.propTypes = {};
 
@@ -16,11 +18,15 @@ function MainPage() {
   const history = useHistory();
   const photos = useSelector((state) => state.photos);
   const dispatch = useDispatch();
+  const typingTimeoutRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [userPhotos, setUserPhotos] = useState([]);
-  const [totalPhotos, setTotalPhotos] = useState(0);
   const [isError, setIsError] = useState(false);
+  const [isTop, setIsTop] = useState(true);
+
+  const [userPhotos, setUserPhotos] = useState([]);
+  const [searchPhotos, setSearchPhotos] = useState([]);
+  const [totalPhotos, setTotalPhotos] = useState(0);
 
   const uID = getFirebaseUserId();
 
@@ -33,19 +39,28 @@ function MainPage() {
           if (snapshot.exists()) {
             setUserPhotos(objectToArr(snapshot.val()));
             setTotalPhotos(snapshot.numChildren());
-            setIsError(true);
           } else {
             console.log("no data available");
           }
         })
         .catch((error) => {
           console.error(error);
-          // setIsError(true);
+          setIsError(true);
         });
     };
 
     getUserPhotos();
     setIsLoading(false);
+  }, [uID]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 100) {
+        setIsTop(false);
+      } else {
+        setIsTop(true);
+      }
+    });
   });
 
   const handlePhotoEditClick = (photo) => {
@@ -57,6 +72,30 @@ function MainPage() {
     const removePhotoId = photo.id;
     const action = removePhoto(removePhotoId);
     dispatch(action);
+  };
+
+  const handleScrollToTop = () => {
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value;
+    if (!searchTerm) {
+      console.log("search: ", searchTerm);
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      const searchResult = userPhotos.filter((photo) =>
+        photo.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSearchPhotos(searchResult);
+    }, 300);
   };
 
   return (
@@ -73,17 +112,43 @@ function MainPage() {
           <p>Log in to create your own album</p>
         )}
       </Container>
-      {isError ? (
-        <p>There something wrong</p>
+
+      <input placeholder="Search..." onChange={handleSearch} />
+
+      {isError && uID ? (
+        <Error />
       ) : (
-        <PhotoList
-          photoList={uID ? userPhotos : photos}
-          onPhotoEditClick={handlePhotoEditClick}
-          onPhotoRemoveClick={handlePhotoRemoveClick}
-          onLoading={isLoading}
-          limit={Pagination.LIMIT}
-          total={totalPhotos}
-        />
+        <>
+          {searchPhotos.length <= 0 && (
+            <PhotoList
+              photoList={uID ? userPhotos : photos}
+              onPhotoEditClick={handlePhotoEditClick}
+              onPhotoRemoveClick={handlePhotoRemoveClick}
+              onLoading={isLoading}
+              limit={Pagination.LIMIT}
+              total={totalPhotos}
+            />
+          )}
+          {searchPhotos.length > 0 && (
+            <PhotoList
+              photoList={uID ? searchPhotos : photos}
+              onPhotoEditClick={handlePhotoEditClick}
+              onPhotoRemoveClick={handlePhotoRemoveClick}
+              onLoading={isLoading}
+              limit={Pagination.LIMIT}
+              total={searchPhotos.length}
+            />
+          )}
+        </>
+      )}
+
+      {isTop === false && (
+        <button
+          className="photo-main__scrollTop"
+          onClick={() => handleScrollToTop()}
+        >
+          Top
+        </button>
       )}
     </div>
   );
